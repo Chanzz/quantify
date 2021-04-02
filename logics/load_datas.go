@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
 	"quantify/messages"
 )
 
@@ -39,4 +38,8 @@ func GetOriginalDataByHttp(symbol string) (*messages.OriginalData, error) {
 		return nil, err
 	}
 	return &originData, nil
+}
+
+func formatOriginData(data *messages.OriginalData) *messages.OriginalData {
+	return data
 }

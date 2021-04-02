@@ -14,14 +14,14 @@ type MetaData struct {
 }
 
 type TimeSeries struct {
-	Open             string `json:"1. open"`
-	High             string `json:"2. high"`
-	Low              string `json:"3. low"`
-	Close            string `json:"4. close"`
-	AdjustedClose    string `json:"5. adjusted close"`
-	Volume           string `json:"6. volume"`
-	DividendAmount   string `json:"7. dividend amount"`
-	SplitCoefficient string `json:"8. split coefficient"`
+	Open             float64 `json:"1. open,string"`
+	High             float64 `json:"2. high,string"`
+	Low              float64 `json:"3. low,string"`
+	Close            float64 `json:"4. close,string"`
+	AdjustedClose    float64 `json:"5. adjusted close,string"`
+	Volume           string  `json:"6. volume"`
+	DividendAmount   string  `json:"7. dividend amount"`
+	SplitCoefficient string  `json:"8. split coefficient"`
 }
 
 type MacdOriginalData struct {

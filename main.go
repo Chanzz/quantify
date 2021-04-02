@@ -11,10 +11,8 @@ func main() {
 		fmt.Printf("get original data by http err: %s", err.Error())
 		return
 	}
-	low, high, err := logics.GetHistoryLowAndHigh(originalData)
-	if err != nil {
-		fmt.Printf("get history low and high err: %s", err.Error())
-	}
-	fmt.Printf("low:%g", low)
-	fmt.Printf("high:%g", high)
+	//low, high := logics.GetHistoryLowAndHigh(originalData)
+	//fmt.Printf("low:%g", low)
+	//fmt.Printf("high:%g", high)
+	logics.Grid(7, 0.860, originalData)
 }
