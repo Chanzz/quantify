@@ -24,39 +24,90 @@ func GetHistoryLowAndHigh(originalData *messages.OriginalData) (float64, float64
 	return historyLow, historyHigh
 }
 
-func Grid(ratio int, buyIn1 float64, originalData *messages.OriginalData) {
+// 无限资金模式(梭哈)
+func ShowHandGrid(ratio int, buyIn float64, originalData *messages.OriginalData) {
 	var dateList []string
 	for date := range originalData.TimeSeries {
 		dateList = append(dateList, date)
 	}
+	// 排序
 	sort.SliceStable(dateList, func(i, j int) bool {
 		return dateList[i] < dateList[j]
 	})
 
 	// 总份额
-	var stock int
+	var stock float64
 	// 总成本
 	var cost float64
-	// 保留两位小数
-	// 计算所有买入卖出点
-	sellOut1, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn1*(1+float64(ratio)/100)), 64)
-	buyIn2, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn1*(1-float64(ratio)/100)), 64)
-	sellOut2, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn2*(1+float64(ratio)/100)), 64)
-	buyIn3, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn2*(1-float64(ratio)/100)), 64)
-	sellOut3, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn3*(1+float64(ratio)/100)), 64)
-	//fmt.Printf("buyIn1:%g \n",buyIn1)
-	//fmt.Printf("sellOut1:%g \n",sellOut1)
-	//fmt.Printf("buyIn2:%g \n",buyIn2)
-	//fmt.Printf("sellOut2:%g \n",sellOut2)
-	//fmt.Printf("buyIn3:%g \n",buyIn3)
-	//fmt.Printf("sellOut3:%g \n",sellOut3)
-
+	// 总收入
+	var income float64
+	// 买入点
+	buyInPoint := buyIn
+	// 卖出点
+	var sellOutPoint float64
+	// 买入份额
+	var baseStock float64
+	baseStock = 10000
+	// 买入次数
+	var buyTimes int
+	// 上次买入成本
+	var lastCost float64
+	// 上次买入份额
+	var lastStock float64
 	for _, date := range dateList {
 		if s, ok := originalData.TimeSeries[date]; ok {
-			// buy
-			if s.Low < buyIn1 {
-				//cost=
+			// 达到买入点
+			if s.Low < buyInPoint {
+				// 计算总成本
+				lastCost = buyInPoint * baseStock
+				cost += lastCost
+				// 计算总份额
+				lastStock = baseStock
+				stock += baseStock
+				// 计算下次买入份额
+				baseStock = getSellOut(baseStock, ratio)
+				// 计算下次卖出点
+				sellOutPoint = getSellOut(buyInPoint, ratio)
+				// 计算下次买入点
+				buyInPoint = getBuyIn(buyIn, ratio)
+				buyTimes++
+				// t+1卖出
+				if buyTimes == 1 {
+					continue
+				}
 			}
+			// 达到卖出点
+			if s.High > sellOutPoint {
+				// 曾经买入
+				if buyTimes > 0 {
+					buyTimes--
+					// 留利润
+					stock -= getSellOutStock(lastStock, lastCost, sellOutPoint)
+					income += sellOutPoint * getSellOutStock(lastStock, lastCost, sellOutPoint)
+				}
+			}
+			fmt.Printf("date:%s data:%+v \n", date, s)
+			fmt.Printf("stock:%g \n", stock)
+			fmt.Printf("cost:%g \n", cost)
+			fmt.Printf("income:%g \n", income)
 		}
+
 	}
+
+}
+
+func getBuyIn(buyIn float64, ratio int) float64 {
+	nextBuyIn, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn*(1-float64(ratio)/100)), 64)
+	return nextBuyIn
+}
+
+func getSellOut(buyIn float64, ratio int) float64 {
+	nextSellOut, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", buyIn*(1+float64(ratio)/100)), 64)
+	return nextSellOut
+}
+
+// 计算留下份额
+func getSellOutStock(lastStock, lastCost, sellOutPoint float64) float64 {
+	income := lastStock * sellOutPoint
+	return lastStock - ((income - lastCost) / sellOutPoint)
 }

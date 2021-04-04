@@ -14,5 +14,5 @@ func main() {
 	//low, high := logics.GetHistoryLowAndHigh(originalData)
 	//fmt.Printf("low:%g", low)
 	//fmt.Printf("high:%g", high)
-	logics.Grid(7, 0.860, originalData)
+	logics.ShowHandGrid(7, 0.860, originalData)
 }
